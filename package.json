@@ -1,0 +1,51 @@
+{
+  "name": "platform-control-nodebot",
+  "version": "0.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.5.1",
+    "body-parser": "^1.4.3",
+    "compression": "^1.0.8",
+    "morgan": "^1.1.1",
+    "jade": "~0.31.2",
+    "di": "0.0.1",
+    "transformify": "~0.1.2",
+    "express-less": "0.0.6",
+    "method-override": "^2.3.0",
+    "browserify": "~3.28.1",
+    "browserify-shim": "^3.3.1"
+  },
+  "scripts": {
+    "test": "grunt"
+  },
+  "browser": {
+    "jquery": "./bower_components/jquery/dist/jquery.js",
+    "angular": "./bower_components/angular/angular.js",
+    "bootstrap": "./bower_components/bootstrap/dist/js/bootstrap.js",
+    "angular-resource": "./bower_components/angular-resource/angular-resource.js",
+    "angular-route": "./bower_components/angular-route/angular-route.js"
+  },
+  "browserify-shim": {
+      "jquery": "$",
+      "angular": {
+          "exports" : "angular",
+          "depends": [ "jquery:$" ]
+      },
+      "angular-resource": {
+          "depends": [ "angular:angular" ]
+      },
+      "angular-route": {
+          "depends": [ "angular:angular" ]
+      },
+      "bootstrap": {
+          "depends": [ "jquery:$" ]
+      }
+  },
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-jslint": "^1.1.12",
+    "grunt-browserify": "^3.0.1",
+    "grunt-contrib-uglify": "^0.6.0",
+    "grunt-contrib-clean": "^0.5.0"
+  }
+}
