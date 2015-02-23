@@ -2,13 +2,48 @@
 /*global every */
 'use strict';
 /*jslint unparam:true*/
-var Cylon = require('cylon');
+var Cylon = require('cylon'),
+  Kalman = require('../kalman/kalman'),
+  posicionX = 255,
+
+  // Create the Kalman instances
+  kalmanX = new Kalman(),
+  kalmanY = new Kalman(),
+
+  //my vars
+  flag_setup = 1,
+  accX,
+  accY,
+  accZ,
+  gyroX,
+  gyroY,
+  gyroZ,
+
+  gyroXangle,
+  gyroYangle, // Angle calculate using the gyro only
+  compAngleX,
+  compAngleY, // Calculated angle using a complementary filter
+  kalAngleX,
+  kalAngleY, // Calculated angle using a Kalman filter
+  gyroXrate,
+  gyroYrate,
+
+  socketActive,
+  dt,
+  informacionGrafica;
+
+console.log(kalmanX);
+console.log(kalmanY);
 
 module.exports = function (server, io) {
   io.on('connection', function (socket) {
     console.log('coneccion');
-    socket.on('yolo', function (params) {
+    socketActive = socket;
+    socket.on('estadoSalidas', function (params) {
       console.log('yolo', params);
+      console.log(typeof params);
+      posicionX = parseInt(params, 10);
+      console.log(posicionX);
     });
   });
 
@@ -18,12 +53,89 @@ module.exports = function (server, io) {
     },
 
     devices: {
-      led: { driver: 'led', pin: 13 }
+      mpu6050: { driver: 'mpu6050' },
+      led: { driver: 'led', pin: 7 }
     },
 
     work: function (my) {
-      every((5).second(), function () {
-        my.led.toggle();
+      every(500, function () {
+        console.log('jolkjkjlk');
+        my.mpu6050.getAcceleration(function (data) {
+          console.log(data);
+          if (flag_setup === 1) {
+            accX = data.ax;
+            accY = data.ay;
+            accZ = data.az;
+
+            // Source: http://www.freescale.com/files/sensors/doc/app_note/AN3461.pdf eq. 25 and eq. 26
+            // atan2 outputs the value of -π to π (radians) - see http://en.wikipedia.org/wiki/Atan2
+            // It is then converted from radians to degrees
+
+            data.roll  = Math.atan2(accY, accZ) * 57.2958;
+            data.pitch = Math.atan2(-accX, accZ) * 57.2958;
+
+            kalmanX.setAngle(data.roll); // Set starting angle
+            kalmanY.setAngle(data.pitch);
+            gyroXangle = data.roll;
+            gyroYangle = data.pitch;
+            compAngleX = data.roll;
+            compAngleY = data.pitch;
+            flag_setup = 0;
+          } else {
+            dt = 0.5;
+
+            accX = data.ax;
+            accY = data.ay;
+            accZ = data.az;
+
+            data.roll  = Math.atan2(accY, accZ) * 57.2958;
+            data.pitch = (Math.atan2(-accX, accZ) * 57.2958) - 28;
+
+            gyroXrate = data.gx; // Convert to deg/s
+            gyroYrate = data.gy; // Convert to deg/s
+
+            if ((data.roll < -90 && kalAngleX > 90) || (data.roll > 90 && kalAngleX < -90)) {
+              kalmanX.setAngle(data.roll);
+              compAngleX = data.roll;
+              kalAngleX = data.roll;
+              gyroXangle = data.roll;
+            } else {
+              kalAngleX = kalmanX.getAngle(data.roll, gyroXrate, dt); // Calculate the angle using a Kalman filter
+            }
+            if (Math.abs(kalAngleX) > 90) {
+              gyroYrate = -gyroYrate; // Invert rate, so it fits the restriced accelerometer reading
+            }
+            kalAngleY = kalmanY.getAngle(data.pitch, gyroYrate, dt);
+
+            gyroXangle += gyroXrate * dt; // Calculate gyro angle without any filter
+            gyroYangle += gyroYrate * dt;
+            //gyroXangle += kalmanX.getRate() * dt; // Calculate gyro angle using the unbiased rate
+            //gyroYangle += kalmanY.getRate() * dt;
+
+            compAngleX = 0.93 * (compAngleX + gyroXrate * dt) + 0.07 * data.roll; // Calculate the angle using a Complimentary filter
+            compAngleY = 0.93 * (compAngleY + gyroYrate * dt) + 0.07 * data.pitch;
+
+            // Reset the gyro angle when it has drifted too much
+            if (gyroXangle < -180 || gyroXangle > 180) {
+              gyroXangle = kalAngleX;
+            }
+            if (gyroYangle < -180 || gyroYangle > 180) {
+              gyroYangle = kalAngleY;
+            }
+
+            data.gx = 0;
+            data.gy = 0;
+
+            data.kalmanX = kalAngleX * 100;
+            data.kalmanY = kalAngleY * 100;
+          }
+          data.posicionX = posicionX;
+          informacionGrafica = data;
+          if (socketActive) {
+            socketActive.emit('data', informacionGrafica);
+          }
+        });
+        my.led.brightness(posicionX);
       });
     }
   }).start();

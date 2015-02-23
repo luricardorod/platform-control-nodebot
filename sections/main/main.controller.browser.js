@@ -2,7 +2,7 @@
 'use strict';
 
 function mainController(scope, Socket) {
-  Socket.emit('yolo', { lu: 'hola'});
+
   console.log(scope);
   scope.chartObject = {
     "type": "LineChart",
@@ -111,7 +111,7 @@ function mainController(scope, Socket) {
     scope.salida.pin5 = scope.posicionX.charAt(4);
     scope.salida.pin4 = scope.posicionX.charAt(5);
     scope.salida.pin3 = scope.posicionX.charAt(6);
-    Socket.emit('estadoSalidas', scope.salida);
+    Socket.emit('estadoSalidas', scope.posicionX);
   };
 
   scope.cssStyle = "height:100%; width:100%;";
