@@ -8,12 +8,14 @@ require('angular-resource');
 require('angular-route');
 require('angular-socket');
 require('bootstrap');
+require('angular-google-chart');
 
 
 app = angular.module('platform-control-nodebot', [
   'ngRoute',
   'ngResource',
-  'btford.socket-io'
+  'btford.socket-io',
+  'googlechart'
 ]);
 app.config(function ($routeProvider) {
   $routeProvider.otherwise({ redirectTo : '/' });

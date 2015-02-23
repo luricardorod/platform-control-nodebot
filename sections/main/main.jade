@@ -1,1 +1,27 @@
-p This is the partial for view 1.
+div(
+  google-chart
+  chart = "chartObject"
+  style = "{{cssStyle}}"
+  )
+  
+button(
+  ng-bind = 'modoSistema',
+  ng-click = 'cambioModo()'
+)
+  
+button( ng-click = 'salida.pin13 = !salida.pin13; enviarEstadoSalidas();') Pin 13 Atras
+button( ng-click = 'salida.pin12 = !salida.pin12; enviarEstadoSalidas();') Pin 12 Adelante
+button( ng-click = 'salida.pin11 = !salida.pin11; enviarEstadoSalidas();') Pin 11
+button( ng-click = 'salida.pin10 = !salida.pin10; enviarEstadoSalidas();') Pin 10
+label posicionX
+input(
+  name='5 bits'
+  ng-model = 'posicionX'
+)
+button( ng-click = 'enviarEstadoSalidas()') Enviar
+label posicionY
+input(
+  name='5 bits'
+  ng-model = 'posicionY'
+)
+button(  ng-click = 'enviarEstadoSalidas()' ) Enviar

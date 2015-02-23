@@ -8,6 +8,10 @@
     "browserify": "~3.28.1",
     "browserify-shim": "^3.3.1",
     "compression": "^1.0.8",
+    "cylon": "^0.22.0",
+    "cylon-firmata": "^0.19.0",
+    "cylon-gpio": "^0.22.0",
+    "cylon-i2c": "^0.19.0",
     "di": "0.0.1",
     "express": "^4.5.1",
     "express-less": "0.0.6",
@@ -28,7 +32,8 @@
     "angular-resource": "./bower_components/angular-resource/angular-resource.js",
     "angular-socket": "./bower_components/angular-socket-io/socket.min.js",
     "io": "./node_modules/socket.io-client/index.js",
-    "angular-route": "./bower_components/angular-route/angular-route.js"
+    "angular-route": "./bower_components/angular-route/angular-route.js",
+    "angular-google-chart": "./bower_components/angular-google-chart/ng-google-chart.js"
   },
   "browserify-shim": {
     "jquery": "$",
@@ -36,6 +41,11 @@
       "exports": "angular",
       "depends": [
         "jquery:$"
+      ]
+    },
+    "angular-google-chart": {
+      "depends": [
+        "angular:angular"
       ]
     },
     "angular-resource": {
