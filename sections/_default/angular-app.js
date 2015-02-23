@@ -6,15 +6,17 @@ di = require('di');
 angular = require('angular');
 require('angular-resource');
 require('angular-route');
+require('angular-socket');
 require('bootstrap');
 
 
 app = angular.module('platform-control-nodebot', [
   'ngRoute',
-  'ngResource'
+  'ngResource',
+  'btford.socket-io'
 ]);
 app.config(function ($routeProvider) {
-  $routeProvider.otherwise({ redirectTo : '/view1' });
+  $routeProvider.otherwise({ redirectTo : '/' });
 });
 
 uiModules = {

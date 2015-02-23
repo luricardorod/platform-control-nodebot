@@ -5,6 +5,7 @@ var express     = require('express'),
   sections      = require('./sections'),
   http          = require('http'),
   path          = require('path'),
+  socketIO      = require('socket.io'),
 
 
 
@@ -16,7 +17,9 @@ var express     = require('express'),
   morgan          = require('morgan'),
 
 // Create server
-  app             = express();
+  app             = express(),
+  io,
+  server;
 
 
 /**
@@ -39,8 +42,11 @@ app.use('/vendor', express.static(__dirname + '/bower_components'));
  * Routes
  */
 
+server = http.createServer(app);
+io = socketIO(server);
+
 // Add the routes from the sections
-sections(app);
+sections(app, io);
 
 // serve index and view partials
 /*jslint unparam:true*/
@@ -57,7 +63,6 @@ app.get(/\/html\/([\w\/]+)\.html/, function (req, res) {
  * Start Server
  */
 
-http.createServer(app).listen(app.get('port'), function () {
+server.listen(app.get('port'), function () {
   console.log('Express app listening on port ' + app.get('port'));
 });
-
