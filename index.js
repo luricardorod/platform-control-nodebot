@@ -27,7 +27,7 @@ var express     = require('express'),
  */
 
 // all environments
-app.set('port', process.env.PORT || 4000);
+app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/sections');
 app.set('view engine', 'jade');
 app.use(morgan('dev'));

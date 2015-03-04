@@ -4,6 +4,7 @@
 function mainController(scope, Socket) {
 
   console.log(scope);
+  console.log('hola');
   scope.chartObject = {
     "type": "LineChart",
     "displayed": true,
@@ -104,6 +105,7 @@ function mainController(scope, Socket) {
   };
 
   scope.enviarEstadoSalidas = function () {
+    var presiones = {};
     scope.salida.pin9 = scope.posicionX.charAt(0);
     scope.salida.pin8 = scope.posicionX.charAt(1);
     scope.salida.pin7 = scope.posicionX.charAt(2);
@@ -111,7 +113,10 @@ function mainController(scope, Socket) {
     scope.salida.pin5 = scope.posicionX.charAt(4);
     scope.salida.pin4 = scope.posicionX.charAt(5);
     scope.salida.pin3 = scope.posicionX.charAt(6);
-    Socket.emit('estadoSalidas', scope.posicionX);
+    presiones.presionX = scope.posicionX;
+    presiones.presionY = scope.posicionY;
+    Socket.emit('estadoSalidas', presiones);
+    console.log(presiones);
   };
 
   scope.cssStyle = "height:100%; width:100%;";

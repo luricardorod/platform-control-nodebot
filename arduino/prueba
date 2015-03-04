@@ -288,7 +288,42 @@ void analogWriteCallback(byte pin, int value)
       SPI.transfer(buffer);
       SPI.transfer(valueScale);
       digitalWrite(slaveSelectPin,HIGH);
-      delay(2000);              // wait for a second
+    }
+    if (pin ==  6) {
+ // turn the LED on (HIGH is the voltage level)
+      int valueScale;
+      int division;
+      int buffer;
+      buffer = 0;
+      valueScale = value * 16;
+      valueScale = valueScale + 15;
+      division = valueScale / 2048;
+      if ( division >= 1) {
+        valueScale = valueScale - 2048;
+        buffer = 8;
+      }
+      division = valueScale / 1024;
+      if ( division >= 1) {
+        valueScale = valueScale - 1024;
+        buffer = buffer + 4;
+      }
+      division = valueScale / 512;
+      if ( division >= 1) {
+        valueScale = valueScale - 512;
+        buffer = buffer + 2;
+      }
+      division = valueScale / 256;
+      if ( division >= 1) {
+        valueScale = valueScale - 256;
+        buffer = buffer + 1;
+      }
+
+      buffer = buffer + 112;
+
+      digitalWrite(slaveSelectPin,LOW);
+      SPI.transfer(buffer);
+      SPI.transfer(valueScale);
+      digitalWrite(slaveSelectPin,HIGH);
     }
     switch(pinConfig[pin]) {
     case SERVO:

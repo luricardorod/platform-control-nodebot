@@ -30,20 +30,27 @@ var Cylon = require('cylon'),
 
   socketActive,
   dt,
-  informacionGrafica;
+  informacionGrafica,
 
-console.log(kalmanX);
-console.log(kalmanY);
+  presiones = {
+    presionX : 0,
+    presionY : 0
+  },
+  presionesAnteriores = {
+    presionX : 0,
+    presionY : 0
+  };
 
 module.exports = function (server, io) {
   io.on('connection', function (socket) {
     console.log('coneccion');
     socketActive = socket;
     socket.on('estadoSalidas', function (params) {
-      console.log('yolo', params);
-      console.log(typeof params);
-      posicionX = parseInt(params, 10);
-      console.log(posicionX);
+      console.log('Informacion recibida');
+      console.log(params);
+      posicionX = parseInt(params.x, 10);
+      presiones.presionX = parseInt(params.presionX, 10);
+      presiones.presionY = parseInt(params.presionY, 10);
     });
   });
 
@@ -54,14 +61,13 @@ module.exports = function (server, io) {
 
     devices: {
       mpu6050: { driver: 'mpu6050' },
-      led: { driver: 'led', pin: 7 }
+      presion7: { driver: 'led', pin: 7 },
+      presion6: { driver: 'led', pin: 6 }
     },
 
     work: function (my) {
-      every(500, function () {
-        console.log('jolkjkjlk');
+      every(250, function () {
         my.mpu6050.getAcceleration(function (data) {
-          console.log(data);
           if (flag_setup === 1) {
             accX = data.ax;
             accY = data.ay;
@@ -135,7 +141,14 @@ module.exports = function (server, io) {
             socketActive.emit('data', informacionGrafica);
           }
         });
-        my.led.brightness(posicionX);
+
+        if (presionesAnteriores.presionX !== presiones.presionX && presionesAnteriores.presionY !== presiones.presionY) {
+          console.log(presiones);
+          my.presion7.brightness(presiones.presionX);
+          my.presion6.brightness(presiones.presionY);
+          presionesAnteriores.presionX = presiones.presionX;
+          presionesAnteriores.presionY = presiones.presionY;
+        }
       });
     }
   }).start();
