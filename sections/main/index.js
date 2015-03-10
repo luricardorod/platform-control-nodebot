@@ -39,18 +39,27 @@ var Cylon = require('cylon'),
   presionesAnteriores = {
     presionX : 0,
     presionY : 0
+  },
+  salidasArduino = {
+    pin8: false,
+    pin5: false,
+    pin4: false,
+    pin3: false,
+    modo: 'manual'
   };
 
 module.exports = function (server, io) {
   io.on('connection', function (socket) {
     console.log('coneccion');
     socketActive = socket;
-    socket.on('estadoSalidas', function (params) {
+    socket.on('estadoSalidas', function (presiones, salidas) {
       console.log('Informacion recibida');
-      console.log(params);
-      posicionX = parseInt(params.x, 10);
-      presiones.presionX = parseInt(params.presionX, 10);
-      presiones.presionY = parseInt(params.presionY, 10);
+      console.log(presiones);
+      console.log(salidas);
+      salidasArduino = salidas;
+      posicionX = parseInt(presiones.x, 10);
+      presiones.presionX = parseInt(presiones.presionX, 10);
+      presiones.presionY = parseInt(presiones.presionY, 10);
     });
   });
 
@@ -62,11 +71,15 @@ module.exports = function (server, io) {
     devices: {
       mpu6050: { driver: 'mpu6050' },
       presion7: { driver: 'led', pin: 7 },
-      presion6: { driver: 'led', pin: 6 }
+      presion6: { driver: 'led', pin: 6 },
+      pin3: { driver: 'led', pin: 3},
+      pin4: { driver: 'led', pin: 4},
+      pin5: { driver: 'led', pin: 5},
+      pin8: { driver: 'led', pin: 8}
     },
 
     work: function (my) {
-      every(250, function () {
+      every(10, function () {
         my.mpu6050.getAcceleration(function (data) {
           if (flag_setup === 1) {
             accX = data.ax;
@@ -142,12 +155,33 @@ module.exports = function (server, io) {
           }
         });
 
-        if (presionesAnteriores.presionX !== presiones.presionX && presionesAnteriores.presionY !== presiones.presionY) {
+        if (presionesAnteriores.presionX !== presiones.presionX || presionesAnteriores.presionY !== presiones.presionY) {
           console.log(presiones);
           my.presion7.brightness(presiones.presionX);
           my.presion6.brightness(presiones.presionY);
           presionesAnteriores.presionX = presiones.presionX;
           presionesAnteriores.presionY = presiones.presionY;
+        }
+
+        if (salidasArduino.pin3) {
+          my.pin3.turnOn();
+        } else {
+          my.pin3.turnOff();
+        }
+        if (salidasArduino.pin4) {
+          my.pin4.turnOn();
+        } else {
+          my.pin4.turnOff();
+        }
+        if (salidasArduino.pin5) {
+          my.pin5.turnOn();
+        } else {
+          my.pin5.turnOff();
+        }
+        if (salidasArduino.pin8) {
+          my.pin8.turnOn();
+        } else {
+          my.pin8.turnOff();
         }
       });
     }

@@ -77,45 +77,30 @@ function mainController(scope, Socket) {
     "formatters": {}
   };
 
-  scope.modoSistema = 'automatico';
+  scope.modoSistema = 'manual';
 
   scope.cambioModo = function () {
     scope.modoSistema = scope.modoSistema === 'automatico' ? 'manual' : 'automatico';
-    scope.salida.modo = scope.modoSistema;
+    scope.salidas.modo = scope.modoSistema;
     scope.enviarEstadoSalidas();
   };
 
-  scope.salida = {
-    pin17: false,
-    pin16: false,
-    pin15: false,
-    pin14: false,
-    pin13: false,
-    pin12: false,
-    pin11: false,
-    pin10: false,
-    pin9:  false,
+  scope.salidas = {
     pin8: false,
-    pin7: false,
-    pin6:  false,
     pin5: false,
     pin4: false,
     pin3:  false,
     modo: scope.modoSistema
   };
 
+  scope.posicionX = 0;
+  scope.posicionY = 0;
+
   scope.enviarEstadoSalidas = function () {
     var presiones = {};
-    scope.salida.pin9 = scope.posicionX.charAt(0);
-    scope.salida.pin8 = scope.posicionX.charAt(1);
-    scope.salida.pin7 = scope.posicionX.charAt(2);
-    scope.salida.pin6 = scope.posicionX.charAt(3);
-    scope.salida.pin5 = scope.posicionX.charAt(4);
-    scope.salida.pin4 = scope.posicionX.charAt(5);
-    scope.salida.pin3 = scope.posicionX.charAt(6);
     presiones.presionX = scope.posicionX;
     presiones.presionY = scope.posicionY;
-    Socket.emit('estadoSalidas', presiones);
+    Socket.emit('estadoSalidas', presiones, scope.salidas);
     console.log(presiones);
   };
 

@@ -1,27 +1,98 @@
-div(
-  google-chart
-  chart = "chartObject"
-  style = "{{cssStyle}}"
+.col-md-8
+  div(
+    google-chart
+    chart = "chartObject"
+    style = "{{cssStyle}}"
   )
-  
-button(
-  ng-bind = 'modoSistema',
-  ng-click = 'cambioModo()'
-)
-  
-button( ng-click = 'salida.pin13 = !salida.pin13; enviarEstadoSalidas();') Pin 13 Atras
-button( ng-click = 'salida.pin12 = !salida.pin12; enviarEstadoSalidas();') Pin 12 Adelante
-button( ng-click = 'salida.pin11 = !salida.pin11; enviarEstadoSalidas();') Pin 11
-button( ng-click = 'salida.pin10 = !salida.pin10; enviarEstadoSalidas();') Pin 10
-label posicionX
-input(
-  name='5 bits'
-  ng-model = 'posicionX'
-)
-button( ng-click = 'enviarEstadoSalidas()') Enviar
-label posicionY
-input(
-  name='5 bits'
-  ng-model = 'posicionY'
-)
-button(  ng-click = 'enviarEstadoSalidas()' ) Enviar
+
+.col-md-4
+  .row
+    .col-md-6
+      label Sistema
+    .col-md-6
+      button.btn.btn-default(
+        ng-bind = 'modoSistema',
+        ng-click = 'cambioModo()',
+        ng-disabled = 'true'
+      )
+  br
+  .row
+    .col-md-6
+      label Valvula 1 A(pin 3)
+    .col-md-6
+      button.btn.btn-default.btn-group-justified(
+        ng-bind = 'salidas.pin3 ? "Prendida" : "Apagada"'
+        ng-click = 'salidas.pin3 = !salidas.pin3; enviarEstadoSalidas()'
+      )
+  br
+  .row
+    .col-md-6
+      label Valvula 1 B(pin 4)
+    .col-md-6
+      button.btn.btn-default.btn-group-justified(
+        ng-bind = 'salidas.pin4 ? "Prendida" : "Apagada"'
+        ng-click = 'salidas.pin4 = !salidas.pin4; enviarEstadoSalidas()'
+      )
+  br
+  .row
+    .col-md-6
+      label Valvula 2 A(pin 5)
+    .col-md-6
+      button.btn.btn-default.btn-group-justified(
+        ng-bind = 'salidas.pin5 ? "Prendida" : "Apagada"'
+        ng-click = 'salidas.pin5 = !salidas.pin5; enviarEstadoSalidas()'
+      )
+
+  br
+  .row
+    .col-md-6
+      label Valvula 2 B(pin 8)
+    .col-md-6
+      button.btn.btn-default.btn-group-justified(
+        ng-bind = 'salidas.pin8 ? "Prendida" : "Apagada"'
+        ng-click = 'salidas.pin8 = !salidas.pin8; enviarEstadoSalidas()'
+      )
+  br
+  .row
+    .col-md-6
+      label Convertidor X:
+      |&nbsp
+      |&nbsp
+      |&nbsp
+      |&nbsp
+      |&nbsp
+      |&nbsp
+      label 800
+    .col-md-6
+      .input-group
+        input.form-control(
+          type='text'
+          ng-model = 'posicionX'
+        )
+        span.input-group-btn
+          button.btn.btn-default(
+            type='button'
+            ng-click = 'enviarEstadoSalidas()'
+          ) Go!
+  br
+  .row
+    .col-md-6
+      label Convertidor Y:
+      |&nbsp
+      |&nbsp
+      |&nbsp
+      |&nbsp
+      |&nbsp
+      |&nbsp
+      label.text-center 800
+    .col-md-6
+      .input-group
+        input.form-control(
+          type='text'
+          ng-model = 'posicionY'
+        )
+        span.input-group-btn
+          button.btn.btn-default(
+            type='button'
+            ng-click = 'enviarEstadoSalidas()'
+          ) Go!
