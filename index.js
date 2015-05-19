@@ -54,10 +54,12 @@ app.get('/', function (req, res) {
   res.render('_default/index');
 });
 /*jslint unparam:false*/
+
 app.get(/\/html\/([\w\/]+)\.html/, function (req, res) {
   var name = req.params[0];
   res.render(name);
 });
+
 /*
 
  * Start Server

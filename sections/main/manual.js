@@ -4,7 +4,7 @@
 /*jslint unparam:true*/
 var Cylon = require('cylon'),
   Kalman = require('../kalman/kalman'),
-  R = require('ramda'),
+  posicionX = 255,
 
   // Create the Kalman instances
   kalmanX = new Kalman(),
@@ -46,19 +46,7 @@ var Cylon = require('cylon'),
     pin4: false,
     pin3: false,
     modo: 'manual'
-  },
-
-  inicio = 0,
-  acelerometro = {
-    posicionX : 0
-  },
-  matrizXPromedio = [],
-  matrizYPromedio = [],
-  promedioX = 0,
-  promedioY = 0,
-  posicionX = 0,
-
-  flagPosicion = 0;
+  };
 
 module.exports = function (server, io) {
   io.on('connection', function (socket) {
@@ -69,17 +57,10 @@ module.exports = function (server, io) {
       console.log(presiones);
       console.log(salidas);
       salidasArduino = salidas;
+      posicionX = parseInt(presiones.x, 10);
       presiones.presionX = parseInt(presiones.presionX, 10);
       presiones.presionY = parseInt(presiones.presionY, 10);
     });
-  });
-
-
-  server.get('/posiciones/:posicionX', function (req, res) {
-    console.log('holll');
-    flagPosicion = 0;
-    posicionX = parseInt(req.params.posicionX, 10);
-    res.send('Hello World! x= ' + posicionX);
   });
 
   Cylon.robot({
@@ -99,7 +80,6 @@ module.exports = function (server, io) {
 
     work: function (my) {
       every(10, function () {
-        inicio = inicio + 1;
         my.mpu6050.getAcceleration(function (data) {
           if (flag_setup === 1) {
             accX = data.ax;
@@ -121,7 +101,7 @@ module.exports = function (server, io) {
             compAngleY = data.pitch;
             flag_setup = 0;
           } else {
-            dt = 0.1;
+            dt = 0.5;
 
             accX = data.ax;
             accY = data.ay;
@@ -167,62 +147,42 @@ module.exports = function (server, io) {
 
             data.kalmanX = kalAngleX * 100;
             data.kalmanY = kalAngleY * 100;
-            acelerometro.posicionX = data.kalmanX;
-            if (inicio < 51) {
-              console.log(inicio);
-              matrizXPromedio.push(data.kalmanX);
-              matrizYPromedio.push(data.kalmanY);
-              acelerometro.posicionX = data.kalmanX;
-            } else {
-              promedioX = R.reduce(function (a, b) {
-                return a + b;
-              }, 0, matrizXPromedio);
-              promedioX = promedioX / 50;
-
-              promedioY = R.reduce(function (a, b) {
-                return a + b;
-              }, 0, matrizYPromedio);
-              promedioY = promedioY / 50;
-
-              if (data.kalmanX < promedioX + 400 && data.kalmanX > promedioX - 400) {
-                promedioX = (promedioX + data.kalmanX) / 2;
-                matrizXPromedio.push(data.kalmanX);
-                matrizYPromedio.push(data.kalmanY);
-                matrizXPromedio.shift();
-                matrizYPromedio.shift();
-              }
-              acelerometro.posicionX = promedioX;
-              data.kalmanX = promedioX;
-              //ARREGLAR
-              data.kalmanY = promedioX;
-            }
           }
           data.posicionX = posicionX;
           informacionGrafica = data;
           if (socketActive) {
             socketActive.emit('data', informacionGrafica);
           }
-          if (posicionX > (acelerometro.posicionX - 25) && posicionX < (acelerometro.posicionX + 25)) {
-            my.pin3.turnOff();
-            my.pin4.turnOff();
-          } else {
-            if (inicio === 294) {
-              my.pin3.turnOff();
-              my.pin4.turnOff();
-            }
-            if (inicio > 300) {
-              inicio = 285;
-              my.presion6.brightness(150);
-              if (posicionX > (acelerometro.posicionX + 60)) {
-                my.pin3.turnOn();
-                my.pin4.turnOff();
-              } else if (posicionX < (acelerometro.posicionX - 60)) {
-                my.pin4.turnOn();
-                my.pin3.turnOff();
-              }
-            }
-          }
         });
+
+        if (presionesAnteriores.presionX !== presiones.presionX || presionesAnteriores.presionY !== presiones.presionY) {
+          console.log(presiones);
+          my.presion7.brightness(presiones.presionX);
+          my.presion6.brightness(presiones.presionY);
+          presionesAnteriores.presionX = presiones.presionX;
+          presionesAnteriores.presionY = presiones.presionY;
+        }
+
+        if (salidasArduino.pin3) {
+          my.pin3.turnOn();
+        } else {
+          my.pin3.turnOff();
+        }
+        if (salidasArduino.pin4) {
+          my.pin4.turnOn();
+        } else {
+          my.pin4.turnOff();
+        }
+        if (salidasArduino.pin5) {
+          my.pin5.turnOn();
+        } else {
+          my.pin5.turnOff();
+        }
+        if (salidasArduino.pin8) {
+          my.pin8.turnOn();
+        } else {
+          my.pin8.turnOff();
+        }
       });
     }
   }).start();

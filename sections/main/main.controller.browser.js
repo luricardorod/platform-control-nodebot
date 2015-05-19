@@ -104,7 +104,7 @@ function mainController(scope, Socket) {
     console.log(presiones);
   };
 
-  scope.cssStyle = "height:100%; width:100%;";
+  scope.cssStyle = "height:600px; width:100%;";
 
   Socket.on('data', function (data) {
     scope.chartObject.data.rows.push({

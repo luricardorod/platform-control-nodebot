@@ -2,9 +2,9 @@
 'use strict';
 
 module.exports = function () {
-  this.Q_angle = 0.001;
-  this.Q_bias = 0.003;
-  this.R_measure = 0.03;
+  this.Q_angle = 0.1;
+  this.Q_bias = 0.3;
+  this.R_measure = 0.01;
 
   // Reset the angle
   this.angle = 0.0;
