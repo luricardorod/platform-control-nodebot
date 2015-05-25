@@ -57,6 +57,12 @@ function mainController(scope, Socket) {
           "label": "kalY",
           "type": "number",
           "p": {}
+        },
+        {
+          "id": "promedioX",
+          "label": "promX",
+          "type": "number",
+          "p": {}
         }
       ],
       "rows": []
@@ -117,7 +123,8 @@ function mainController(scope, Socket) {
         {v: data.gy},*/
         {v: data.posicionX},
         {v: data.kalmanX},
-        {v: data.kalmanY}
+        {v: data.kalmanY},
+        {v: data.promedioX}
       ]
     });
     console.log(data);

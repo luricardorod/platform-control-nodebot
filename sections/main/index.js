@@ -57,8 +57,9 @@ var Cylon = require('cylon'),
   promedioX = 0,
   promedioY = 0,
   posicionX = 0,
-
-  flagPosicion = 0;
+  matrizXPosicion = [0, 0],
+  indexX = 0,
+  indexPosicionX = 0;
 
 module.exports = function (server, io) {
   io.on('connection', function (socket) {
@@ -75,11 +76,24 @@ module.exports = function (server, io) {
   });
 
 
-  server.get('/posiciones/:posicionX', function (req, res) {
-    console.log('holll');
-    flagPosicion = 0;
-    posicionX = parseInt(req.params.posicionX, 10);
-    res.send('Hello World! x= ' + posicionX);
+  server.get('/posiciones/:posicionX/:index', function (req, res) {
+    
+    var tendenciaAnterior,
+      tendenciaActual,
+      indexPeticion = parseInt(req.params.index, 10),
+      posicionXPeticion = parseInt(req.params.posicionX, 10);
+
+    if (indexPeticion > indexX) {
+      tendenciaAnterior = matrizXPosicion[matrizXPosicion.length - 2] - matrizXPosicion[matrizXPosicion.length - 1];
+      tendenciaActual = matrizXPosicion[matrizXPosicion.length - 1] - posicionXPeticion;
+
+      if ((tendenciaAnterior <= 0 && tendenciaActual < 0) || (tendenciaAnterior >= 0 && tendenciaActual > 0) ) {
+        matrizXPosicion.pop();
+      } 
+      matrizXPosicion.push(posicionXPeticion);
+      indexX = indexPeticion;
+    };
+    res.send('Hello World! x= ' + posicionXPeticion);
   });
 
   Cylon.robot({
@@ -167,58 +181,50 @@ module.exports = function (server, io) {
 
             data.kalmanX = kalAngleX * 100;
             data.kalmanY = kalAngleY * 100;
-            acelerometro.posicionX = data.kalmanX;
-            if (inicio < 51) {
-              console.log(inicio);
-              matrizXPromedio.push(data.kalmanX);
-              matrizYPromedio.push(data.kalmanY);
-              acelerometro.posicionX = data.kalmanX;
-            } else {
-              promedioX = R.reduce(function (a, b) {
+
+            if (matrizXPromedio.length > 50) {
+              matrizXPromedio.shift();
+            };
+
+            matrizXPromedio.push(data.kalmanX);
+            promedioX = R.reduce(function (a, b) {
                 return a + b;
               }, 0, matrizXPromedio);
-              promedioX = promedioX / 50;
+            
+            acelerometro.posicionX = promedioX / matrizXPromedio.length;
+            data.promedioX = acelerometro.posicionX;
+            
+            data.posicionX = posicionX;
 
-              promedioY = R.reduce(function (a, b) {
-                return a + b;
-              }, 0, matrizYPromedio);
-              promedioY = promedioY / 50;
-
-              if (data.kalmanX < promedioX + 400 && data.kalmanX > promedioX - 400) {
-                promedioX = (promedioX + data.kalmanX) / 2;
-                matrizXPromedio.push(data.kalmanX);
-                matrizYPromedio.push(data.kalmanY);
-                matrizXPromedio.shift();
-                matrizYPromedio.shift();
-              }
-              acelerometro.posicionX = promedioX;
-              data.kalmanX = promedioX;
-              //ARREGLAR
-              data.kalmanY = promedioX;
+            informacionGrafica = data;
+             if (socketActive) {
+              socketActive.emit('data', informacionGrafica);
             }
-          }
-          data.posicionX = posicionX;
-          informacionGrafica = data;
-          if (socketActive) {
-            socketActive.emit('data', informacionGrafica);
-          }
-          if (posicionX > (acelerometro.posicionX - 25) && posicionX < (acelerometro.posicionX + 25)) {
-            my.pin3.turnOff();
-            my.pin4.turnOff();
-          } else {
-            if (inicio === 294) {
+
+            posicionX = matrizXPosicion[indexPosicionX];
+
+            if (posicionX > (acelerometro.posicionX - 25) && posicionX < (acelerometro.posicionX + 25)) {
               my.pin3.turnOff();
               my.pin4.turnOff();
-            }
-            if (inicio > 300) {
-              inicio = 285;
-              my.presion6.brightness(150);
-              if (posicionX > (acelerometro.posicionX + 60)) {
-                my.pin3.turnOn();
-                my.pin4.turnOff();
-              } else if (posicionX < (acelerometro.posicionX - 60)) {
-                my.pin4.turnOn();
+              if (indexPosicionX < matrizXPosicion.length - 1) {
+                indexPosicionX++;
+                posicionX = matrizXPosicion[indexPosicionX];
+              };
+            } else {
+              if (inicio === 294) {
                 my.pin3.turnOff();
+                my.pin4.turnOff();
+              }
+              if (inicio > 300) {
+                inicio = 285;
+                my.presion6.brightness(150);
+                if (posicionX > (acelerometro.posicionX + 60)) {
+                  my.pin3.turnOn();
+                  my.pin4.turnOff();
+                } else if (posicionX < (acelerometro.posicionX - 60)) {
+                  my.pin4.turnOn();
+                  my.pin3.turnOff();
+                }
               }
             }
           }
